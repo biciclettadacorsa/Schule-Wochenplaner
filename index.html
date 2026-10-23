@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2357c6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Schultag">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Mein Schultag 6c</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: Hausaufgabenheft-Gefühl – Karopapier, Tagesreiter oben, links Stundenplan + Nachmittag, rechts die To-Do-Liste */
+:root{
+  --bg:#f3f6fb; --grid:#e1e8f3; --card:#ffffff; --fg:#1b2433; --muted:#5d6a80;
+  --line:#d5ddea; --ink:#2357c6; --ink-soft:#e4ecfb; --ok:#1f8a4c; --ok-soft:#e1f4e8;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121822; --grid:#1a2230; --card:#1a2230; --fg:#e8edf6; --muted:#9aa7bc;
+  --line:#2c3749; --ink:#7ea6ff; --ink-soft:#22304a; --ok:#5cc98a; --ok-soft:#173326; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121822; --grid:#1a2230; --card:#1a2230; --fg:#e8edf6; --muted:#9aa7bc;
+  --line:#2c3749; --ink:#7ea6ff; --ink-soft:#22304a; --ok:#5cc98a; --ok-soft:#173326; color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;}
+.wrap{max-width:1080px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end;justify-content:space-between;margin-bottom:16px}
+h1{font:800 clamp(28px,6vw,40px)/1.05 var(--display);margin:0;text-wrap:balance}
+h1 span{color:var(--ink)}
+.date{color:var(--muted);margin:4px 0 0}
+h2{font:700 20px/1.2 var(--display);margin:0;text-wrap:balance}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font:700 15px var(--body);border:2px solid var(--line);background:var(--card);color:var(--fg);
+  border-radius:10px;padding:8px 12px;cursor:pointer;min-width:52px}
+.tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tab .t{display:block;font-size:11px;font-weight:400;opacity:.8}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sub{color:var(--muted);font-size:14px;margin:0}
+/* Stundenplan */
+.lessons{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lesson{display:grid;grid-template-columns:28px 92px minmax(0,1fr) auto;gap:10px;align-items:center;
+  padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--s) 16%,var(--card));border-left:5px solid var(--s)}
+.lesson .n{font:800 15px var(--display);color:var(--muted)}
+.lesson .time{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lesson .f{font-weight:700}
+.lesson .r{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pause{font-size:12px;color:var(--muted);padding-left:48px;letter-spacing:.04em;text-transform:uppercase}
+.end{font-size:14px;color:var(--muted)}
+/* Nachmittag */
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.timeline li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px dashed var(--line)}
+.timeline li:first-child{border-top:0}
+.timeline .clock{font:700 15px var(--display);color:var(--ink);font-variant-numeric:tabular-nums}
+.timeline .what{font-weight:700}
+.timeline .hint{font-size:14px;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label.small{font-size:14px;color:var(--muted)}
+input[type=time],input[type=text],select{font:16px var(--body);color:var(--fg);background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:6px 8px}
+/* To-Do */
+.progress{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:14px;border-radius:99px;background:var(--ink-soft);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:99px;transition:width .3s}
+.count{font:800 18px var(--display);font-variant-numeric:tabular-nums;min-width:56px;text-align:right}
+.done-msg{background:var(--ok-soft);color:var(--ok);font-weight:700;border-radius:10px;padding:10px 12px}
+.group{display:flex;flex-direction:column;gap:4px}
+.group h3{font:700 13px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px;display:flex;justify-content:space-between;gap:8px}
+.group h3 em{font-style:normal;letter-spacing:0;text-transform:none;font-weight:400}
+.task{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-radius:10px;cursor:pointer}
+.task:hover{background:var(--ink-soft)}
+.task input{appearance:none;flex:none;width:24px;height:24px;margin:0;border:2px solid var(--muted);border-radius:7px;cursor:pointer;display:grid;place-content:center;background:var(--card)}
+.task input:checked{background:var(--ok);border-color:var(--ok)}
+.task input:checked::after{content:"";width:6px;height:12px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.task .txt{min-width:0}
+.task .txt small{display:block;color:var(--muted);font-size:13px}
+.task.checked .main{text-decoration:line-through;color:var(--muted)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--s);margin-right:6px;vertical-align:1px}
+.del{margin-left:auto;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+.add{display:flex;gap:8px;flex-wrap:wrap}
+.add input[type=text]{flex:1 1 180px;min-width:0}
+.btn{font:700 15px var(--body);border:0;border-radius:8px;padding:8px 14px;background:var(--ink);color:#fff;cursor:pointer}
+details{font-size:14px;color:var(--muted)}
+details summary{cursor:pointer;font-weight:700;color:var(--fg)}
+details .row{margin-top:10px}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Mein Schultag <span>6c</span></h1>
+      <p class="date" id="dateLine"></p>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Wochentag"></nav>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <section class="panel" aria-labelledby="hPlan">
+        <h2 id="hPlan">Stundenplan</h2>
+        <ol class="lessons" id="lessons"></ol>
+        <p class="end">Schulschluss 13:00 – zu Hause ca. 13:40.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="hNach">
+        <h2 id="hNach">Mein Nachmittag</h2>
+        <div class="row">
+          <label class="small" for="start">Ich fange an mit Hausaufgaben um</label>
+          <input type="time" id="start" value="14:30" step="300">
+        </div>
+        <ol class="timeline" id="timeline"></ol>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>Einstellungen (Fremdsprache, Religion, Musik)</summary>
+          <div class="row"><label class="small" for="fs">2. Fremdsprache</label>
+            <select id="fs"><option value="F1">Französisch (F_1)</option><option value="F3">Französisch (F_3)</option><option value="L1">Latein</option></select></div>
+          <div class="row"><label class="small" for="rel">Religion/Ethik</label>
+            <select id="rel"><option value="K">Kath. Religion</option><option value="Ev">Ev. Religion</option><option value="Eth">Ethik</option></select></div>
+          <div class="row"><label class="small" for="mu">Musikgruppe</label>
+            <select id="mu"><option value="Mu1">Mu_1</option><option value="Mu2">Mu_2</option></select></div>
+        </details>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="hTodo">
+      <h2 id="hTodo">Meine To-Do-Liste</h2>
+      <div class="progress"><div class="bar"><i id="barFill"></i></div><span class="count" id="count">0/0</span></div>
+      <p class="done-msg" id="doneMsg" hidden>Alles geschafft! Jetzt ist Freizeit.</p>
+      <div id="todo"></div>
+      <div class="group">
+        <h3>Eigene Aufgabe hinzufügen</h3>
+        <form class="add" id="addForm">
+          <input type="text" id="newTask" placeholder="z. B. Mathe-Schulaufgabe üben" maxlength="80">
+          <select id="newDay" aria-label="Für welchen Tag">
+            <option value="sel">nur heute</option><option value="all">jeden Tag</option>
+          </select>
+          <button class="btn" type="submit">Hinzufügen</button>
+        </form>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const DAYS=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
+const SHORT=["Mo","Di","Mi","Do","Fr"];
+const TIMES=[["08:00","08:45"],["08:45","09:30"],["09:45","10:30"],["10:30","11:15"],["11:30","12:15"],["12:15","13:00"]];
+
+const SUBJ={
+  G:{n:"Geschichte",s:"#c07a2c",mat:"Geschichtsbuch, Heft",learn:true},
+  M:{n:"Mathe",s:"#2f6fdb",mat:"Mathebuch, Heft, Geodreieck",learn:true},
+  E:{n:"Englisch",s:"#d1435b",mat:"Englischbuch, Heft, Vokabelheft",learn:true},
+  D:{n:"Deutsch",s:"#7d4bd1",mat:"Deutschbuch, Heft",learn:true},
+  F:{n:"Französisch",s:"#1e9aa6",mat:"Französischbuch, Heft, Vokabelheft",learn:true},
+  L:{n:"Latein",s:"#1e9aa6",mat:"Lateinbuch, Heft, Vokabelheft",learn:true},
+  NuT:{n:"Natur und Technik",s:"#3f9a3f",mat:"NuT-Heft, Buch",learn:true},
+  Mu:{n:"Musik",s:"#c2479e",mat:"Musikheft"},
+  Sp:{n:"Sport",s:"#e07b1f",mat:"Sportsachen, Turnschuhe, Trinkflasche"},
+  Skd:{n:"Sport (koedukativ)",s:"#e07b1f",mat:"Sportsachen, Turnschuhe, Trinkflasche"},
+  Rel:{n:"Religion",s:"#8a7a3a",mat:"Religionsheft",learn:true},
+  Ku:{n:"Kunst",s:"#d6a21c",mat:"Malkasten, Pinsel, Zeichenblock"}
+};
+
+function settings(){
+  let s={fs:"F1",rel:"K",mu:"Mu1"};
+  try{Object.assign(s,JSON.parse(localStorage.getItem("st-settings")||"{}"))}catch(e){}
+  return s;
+}
+function lessonsFor(d){
+  const s=settings();
+  const fs=s.fs==="L1"?{k:"L",r:"B204"}:{k:"F",r:s.fs==="F1"?"B201":"B203"};
+  const rel={K:["Kath. Religion","B203"],Ev:["Ev. Religion","B205"],Eth:["Ethik","B206"]}[s.rel];
+  const mu={k:"Mu",r:s.mu==="Mu1"?"Mu2":"B001"};
+  const plan=[
+    [["G","B203"],["G","B203"],[mu.k,mu.r],[mu.k,mu.r],["E","B203"],["E","B203"]],
+    [["M","B203"],["M","B203"],["Sp","Spo1"],["Sp","Spo1"],["Rel",rel[1],rel[0]],["Rel",rel[1],rel[0]]],
+    [[fs.k,fs.r],[fs.k,fs.r],["D","B203"],["D","B203"],["NuT","Bio2"],["NuT","Bio2"]],
+    [["E","B203"],["E","B203"],["M","B203"],["M","B203"],["D","B203"],["D","B203"]],
+    [[fs.k,fs.r],[fs.k,fs.r],["NuT","EDV1"],["Skd","Spo3"],["Ku","Wer2"],["Ku","Wer2"]]
+  ];
+  return plan[d].map(([k,r,name])=>({k,r,name:name||SUBJ[k].n,s:SUBJ[k].s}));
+}
+
+/* Datum: aktuelle Woche, am Wochenende die nächste */
+const now=new Date();
+let wd=now.getDay(); // 0 So
+const monday=new Date(now); monday.setHours(0,0,0,0);
+if(wd===0) monday.setDate(monday.getDate()+1);
+else if(wd===6) monday.setDate(monday.getDate()+2);
+else monday.setDate(monday.getDate()-(wd-1));
+const todayIdx=(wd>=1&&wd<=5)?wd-1:0;
+let sel=todayIdx;
+const dateOf=i=>{const d=new Date(monday);d.setDate(d.getDate()+i);return d};
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+
+const store={
+  get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+function renderTabs(){
+  const t=document.getElementById("tabs");t.innerHTML="";
+  DAYS.forEach((d,i)=>{
+    const b=document.createElement("button");b.className="tab";b.type="button";
+    b.setAttribute("aria-pressed",i===sel);
+    const dt=dateOf(i);
+    b.innerHTML=`${SHORT[i]}<span class="t">${dt.getDate()}.${dt.getMonth()+1}.${i===todayIdx&&wd>=1&&wd<=5?" heute":""}</span>`;
+    b.onclick=()=>{sel=i;render()};
+    t.appendChild(b);
+  });
+}
+
+function renderLessons(){
+  const ol=document.getElementById("lessons");ol.innerHTML="";
+  lessonsFor(sel).forEach((l,i)=>{
+    if(i===2) ol.insertAdjacentHTML("beforeend",'<li class="pause">Pause 9:30 – 9:45</li>');
+    if(i===4) ol.insertAdjacentHTML("beforeend",'<li class="pause">Pause 11:15 – 11:30</li>');
+    ol.insertAdjacentHTML("beforeend",`<li class="lesson" style="--s:${l.s}"><span class="n">${i+1}.</span><span class="time">${TIMES[i][0]}–${TIMES[i][1]}</span><span class="f">${l.name}</span><span class="r">${l.r}</span></li>`);
+  });
+}
+
+function addMin(t,m){const[h,mm]=t.split(":").map(Number);const x=h*60+mm+m;return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0")}
+function renderTimeline(){
+  const st=document.getElementById("start").value||"14:30";
+  const steps=[
+    ["13:40","Ankommen, Mittagessen, Pause","Erst mal abschalten und essen.",null],
+    [st,"Hausaufgabenheft anschauen","Was ist auf? Alles auf der To-Do-Liste abhaken, was nichts ist.",0],
+    [null,"Hausaufgaben (ca. 40 Min)","Schwierigstes Fach zuerst. Handy weg, Schreibtisch frei.",5],
+    [null,"5 Minuten Pause","Aufstehen, trinken, kurz bewegen.",45],
+    [null,"Lernen (ca. 30 Min)","Vokabeln und den Stoff der letzten Stunde für morgen wiederholen.",50],
+    [null,"Schulranzen für morgen packen","Mit dem Stundenplan von morgen vergleichen.",80],
+    [null,"Freizeit!","Alles abgehakt? Dann ist der Rest des Tages frei.",90]
+  ];
+  document.getElementById("timeline").innerHTML=steps.map(([t,w,h,off])=>
+    `<li><span class="clock">${t||addMin(st,off)}</span><div><div class="what">${w}</div><div class="hint">${h}</div></div></li>`).join("");
+}
+
+function buildTasks(){
+  const today=lessonsFor(sel);
+  const nextIdx=sel===4?0:sel+1;
+  const tomorrow=lessonsFor(nextIdx);
+  const uniq=a=>{const seen=new Set();return a.filter(l=>!seen.has(l.k)&&seen.add(l.k))};
+  const s=settings();
+  const fsName=s.fs==="L1"?"Latein":"Französisch";
+  const groups=[];
+  groups.push({title:"Nach der Schule",note:"",items:[
+    {id:"heft",main:"Hausaufgabenheft anschauen",small:"Was muss ich heute erledigen?"},
+    ...uniq(today).filter(l=>!["Sp","Skd"].includes(l.k)).map(l=>({id:"ha-"+l.k,main:`Hausaufgabe ${l.name}`,small:"Erledigt – oder heute nichts auf",s:l.s}))
+  ]});
+  const learn=[
+    {id:"vok-e",main:"Englisch-Vokabeln (10 Min)",small:"Laut lesen, abdecken, aufschreiben",s:SUBJ.E.s},
+    {id:"vok-fs",main:`${fsName}-Vokabeln (10 Min)`,small:"Neue Wörter zuerst, dann die schwierigen",s:SUBJ.F.s},
+    ...uniq(tomorrow).filter(l=>SUBJ[l.k].learn)
+      .map(l=>({id:"wdh-"+l.k,main:`${l.name}: letzte Stunde wiederholen`,small:"Hefteintrag durchlesen – eine Abfrage oder Ex ist möglich",s:l.s}))
+  ];
+  groups.push({title:"Lernen",note:"",items:learn});
+  const pack=[
+    {id:"p-heft",main:"Hausaufgabenheft & Mäppchen",small:"Stifte, Füller, Radiergummi, Lineal"},
+    ...uniq(tomorrow).map(l=>({id:"p-"+l.k,main:l.name,small:SUBJ[l.k].mat,s:l.s})),
+    {id:"p-brot",main:"Pausenbrot & Trinkflasche",small:"Morgen früh nicht vergessen"}
+  ];
+  groups.push({title:"Ranzen packen",note:"für "+DAYS[nextIdx],items:pack});
+  const custom=store.get("st-custom",[]).filter(c=>c.day==="all"||c.day===iso(dateOf(sel)));
+  if(custom.length) groups.push({title:"Eigene Aufgaben",note:"",items:custom.map(c=>({id:"c-"+c.id,main:c.text,small:c.day==="all"?"jeden Tag":"",custom:c.id}))});
+  return groups;
+}
+
+function renderTodo(){
+  const key="st-done-"+iso(dateOf(sel));
+  const done=store.get(key,{});
+  const groups=buildTasks();
+  const box=document.getElementById("todo");box.innerHTML="";
+  let total=0,checked=0;
+  groups.forEach(g=>{
+    const div=document.createElement("div");div.className="group";
+    div.innerHTML=`<h3>${g.title}<em>${g.note}</em></h3>`;
+    g.items.forEach(it=>{
+      total++; if(done[it.id]) checked++;
+      const lab=document.createElement("label");lab.className="task"+(done[it.id]?" checked":"");
+      const cb=document.createElement("input");cb.type="checkbox";cb.id="t-"+it.id;cb.checked=!!done[it.id];
+      cb.onchange=()=>{const d=store.get(key,{});if(cb.checked)d[it.id]=1;else delete d[it.id];store.set(key,d);renderTodo()};
+      lab.appendChild(cb);
+      const tx=document.createElement("span");tx.className="txt";
+      tx.innerHTML=`<span class="main">${it.s?`<span class="dot" style="--s:${it.s}"></span>`:""}${esc(it.main)}</span>${it.small?`<small>${esc(it.small)}</small>`:""}`;
+      lab.appendChild(tx);
+      if(it.custom){const x=document.createElement("button");x.type="button";x.className="del";x.textContent="×";x.setAttribute("aria-label","Aufgabe löschen");
+        x.onclick=e=>{e.preventDefault();store.set("st-custom",store.get("st-custom",[]).filter(c=>c.id!==it.custom));renderTodo()};lab.appendChild(x)}
+      div.appendChild(lab);
+    });
+    box.appendChild(div);
+  });
+  document.getElementById("count").textContent=checked+"/"+total;
+  document.getElementById("barFill").style.width=(total?checked/total*100:0)+"%";
+  document.getElementById("doneMsg").hidden=!(total&&checked===total);
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function render(){
+  const d=dateOf(sel);
+  document.getElementById("dateLine").textContent=`${DAYS[sel]}, ${d.toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}`;
+  renderTabs();renderLessons();renderTimeline();renderTodo();
+}
+
+/* Einstellungen */
+const s0=settings();
+["fs","rel","mu"].forEach(id=>{const el=document.getElementById(id);el.value=s0[id];
+  el.onchange=()=>{const s=settings();s[id]=el.value;store.set("st-settings",s);render()}});
+const startEl=document.getElementById("start");
+startEl.value=store.get("st-start","14:30");
+startEl.onchange=()=>{store.set("st-start",startEl.value);renderTimeline()};
+
+document.getElementById("addForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const inp=document.getElementById("newTask");const t=inp.value.trim();if(!t)return;
+  const day=document.getElementById("newDay").value==="all"?"all":iso(dateOf(sel));
+  const list=store.get("st-custom",[]);list.push({id:Date.now().toString(36),text:t,day});store.set("st-custom",list);
+  inp.value="";renderTodo();
+});
+render();
+</script>
+
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>
